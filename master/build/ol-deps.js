@@ -24,6 +24,7 @@ goog.addDependency('../../../ol/ol/deviceorientation.js', ['ol.DeviceOrientation
 goog.addDependency('../../../ol/ol/dom/dom.js', ['ol.dom', 'ol.dom.BrowserFeature'], ['goog.asserts', 'goog.vec.Mat4']);
 goog.addDependency('../../../ol/ol/dom/input.js', ['ol.dom.Input', 'ol.dom.InputProperty'], ['goog.events', 'goog.events.EventType', 'ol.Object']);
 goog.addDependency('../../../ol/ol/easing.js', ['ol.easing'], ['goog.fx.easing']);
+goog.addDependency('../../../ol/ol/ellipsoid/bessel1841ellipsoid.js', ['ol.ellipsoid.BESSEL1841'], ['ol.Ellipsoid']);
 goog.addDependency('../../../ol/ol/ellipsoid/ellipsoid.js', ['ol.Ellipsoid'], ['goog.math', 'ol.Coordinate']);
 goog.addDependency('../../../ol/ol/ellipsoid/wgs84ellipsoid.js', ['ol.ellipsoid.WGS84'], ['ol.Ellipsoid']);
 goog.addDependency('../../../ol/ol/expression.js', ['ol.Expression', 'ol.ExpressionLiteral'], []);
@@ -111,6 +112,7 @@ goog.addDependency('../../../ol/ol/parser/polyline.js', ['ol.parser.polyline'], 
 goog.addDependency('../../../ol/ol/parser/wkt.js', ['ol.parser.WKT'], ['goog.array', 'goog.string', 'ol.geom.Geometry', 'ol.geom.GeometryCollection', 'ol.geom.LineString', 'ol.geom.MultiLineString', 'ol.geom.MultiPoint', 'ol.geom.MultiPolygon', 'ol.geom.Point', 'ol.geom.Polygon', 'ol.parser.Parser']);
 goog.addDependency('../../../ol/ol/parser/xml.js', ['ol.parser.XML'], ['goog.dom.xml', 'ol.parser.Parser']);
 goog.addDependency('../../../ol/ol/pixel.js', ['ol.Pixel'], []);
+goog.addDependency('../../../ol/ol/proj/chprojection.js', ['ol.proj.CH', 'ol.proj.EPSG2056', 'ol.proj.EPSG21781'], ['goog.asserts', 'goog.math', 'ol.Projection', 'ol.ProjectionUnits', 'ol.ellipsoid.BESSEL1841', 'ol.proj', 'ol.proj.EPSG4326']);
 goog.addDependency('../../../ol/ol/proj/common.js', ['ol.proj.addCommonProjections'], ['ol.proj', 'ol.proj.EPSG3857', 'ol.proj.EPSG4326']);
 goog.addDependency('../../../ol/ol/proj/epsg3857projection.js', ['ol.proj.EPSG3857'], ['goog.array', 'goog.asserts', 'ol.Projection', 'ol.ProjectionUnits', 'ol.math', 'ol.proj']);
 goog.addDependency('../../../ol/ol/proj/epsg4326projection.js', ['ol.proj.EPSG4326'], ['ol.Projection', 'ol.ProjectionUnits', 'ol.proj']);
