@@ -13300,6 +13300,7 @@ ol.MapBrowserEvent = function(type, map, browserEvent, opt_frameState) {
   goog.base(this, type, map, opt_frameState);
   this.browserEvent = browserEvent;
   this.coordinate_ = null;
+  this.otherInteractionsStopped = false;
   this.pixel_ = null
 };
 goog.inherits(ol.MapBrowserEvent, ol.MapEvent);
@@ -13319,6 +13320,17 @@ ol.MapBrowserEvent.prototype.getPixel = function() {
 };
 ol.MapBrowserEvent.prototype.isMouseActionButton = function() {
   return ol.BrowserFeature.HAS_TOUCH || this.browserEvent.isMouseActionButton()
+};
+ol.MapBrowserEvent.prototype.preventDefault = function() {
+  goog.base(this, "preventDefault");
+  this.browserEvent.preventDefault()
+};
+ol.MapBrowserEvent.prototype.stopOtherInteractions = function() {
+  this.otherInteractionsStopped = true
+};
+ol.MapBrowserEvent.prototype.stopPropagation = function() {
+  goog.base(this, "stopPropagation");
+  this.browserEvent.stopPropagation()
 };
 ol.MapBrowserEventHandler = function(map) {
   goog.base(this);
@@ -13997,7 +14009,7 @@ ol.interaction.DoubleClickZoom.prototype.handleMapBrowserEvent = function(mapBro
     var view = map.getView().getView2D();
     ol.interaction.Interaction.zoomByDelta(map, view, delta, anchor, ol.interaction.DOUBLECLICKZOOM_ANIMATION_DURATION);
     mapBrowserEvent.preventDefault();
-    browserEvent.preventDefault()
+    mapBrowserEvent.stopOtherInteractions()
   }
 };
 goog.provide("ol.interaction.ConditionType");
@@ -14340,8 +14352,8 @@ ol.interaction.KeyboardPan.prototype.handleMapBrowserEvent = function(mapBrowser
       var delta = [deltaX, deltaY];
       ol.coordinate.rotate(delta, rotation);
       ol.interaction.Interaction.pan(map, view, delta, ol.interaction.KEYBOARD_PAN_DURATION);
-      keyEvent.preventDefault();
-      mapBrowserEvent.preventDefault()
+      mapBrowserEvent.preventDefault();
+      mapBrowserEvent.stopOtherInteractions()
     }
   }
 };
@@ -14369,8 +14381,8 @@ ol.interaction.KeyboardZoom.prototype.handleMapBrowserEvent = function(mapBrowse
       map.requestRenderFrame();
       var view = map.getView().getView2D();
       ol.interaction.Interaction.zoomByDelta(map, view, delta, undefined, ol.interaction.KEYBOARD_ZOOM_DURATION);
-      keyEvent.preventDefault();
-      mapBrowserEvent.preventDefault()
+      mapBrowserEvent.preventDefault();
+      mapBrowserEvent.stopOtherInteractions()
     }
   }
 };
@@ -14407,7 +14419,7 @@ ol.interaction.MouseWheelZoom.prototype.handleMapBrowserEvent = function(mapBrow
     goog.global.clearTimeout(this.timeoutId_);
     this.timeoutId_ = goog.global.setTimeout(goog.bind(this.doZoom_, this, map), timeLeft);
     mapBrowserEvent.preventDefault();
-    mouseWheelEvent.preventDefault()
+    mapBrowserEvent.stopOtherInteractions()
   }
 };
 ol.interaction.MouseWheelZoom.prototype.doZoom_ = function(map) {
@@ -20484,7 +20496,7 @@ ol.Map.prototype.handleMapBrowserEvent = function(mapBrowserEvent) {
     for(i = interactionsArray.length - 1;i >= 0;i--) {
       var interaction = interactionsArray[i];
       interaction.handleMapBrowserEvent(mapBrowserEvent);
-      if(mapBrowserEvent.defaultPrevented) {
+      if(mapBrowserEvent.otherInteractionsStopped) {
         break
       }
     }
