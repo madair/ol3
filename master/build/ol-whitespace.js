@@ -21156,8 +21156,7 @@ ol.control.MousePosition = function(opt_options) {
   this.undefinedHTML_ = goog.isDef(options.undefinedHTML) ? options.undefinedHTML : "";
   this.renderedHTML_ = element.innerHTML;
   this.mapProjection_ = null;
-  this.transform_ = ol.proj.identityTransform;
-  this.renderedProjection_ = null;
+  this.transform_ = null;
   this.lastMouseMovePixel_ = null
 };
 goog.inherits(ol.control.MousePosition, ol.control.Control);
@@ -21166,9 +21165,15 @@ ol.control.MousePosition.prototype.handleMapPostrender = function(mapEvent) {
   if(goog.isNull(frameState)) {
     this.mapProjection_ = null
   }else {
-    this.mapProjection_ = frameState.view2DState.projection
+    if(this.mapProjection_ != frameState.view2DState.projection) {
+      this.mapProjection_ = frameState.view2DState.projection;
+      this.transform_ = null
+    }
   }
   this.updateHTML_(this.lastMouseMovePixel_)
+};
+ol.control.MousePosition.prototype.getProjection = function() {
+  return this.projection_
 };
 ol.control.MousePosition.prototype.handleMouseMove = function(browserEvent) {
   var map = this.getMap();
@@ -21187,16 +21192,19 @@ ol.control.MousePosition.prototype.setMap = function(map) {
     this.listenerKeys.push(goog.events.listen(viewport, goog.events.EventType.MOUSEMOVE, this.handleMouseMove, false, this), goog.events.listen(viewport, goog.events.EventType.MOUSEOUT, this.handleMouseOut, false, this))
   }
 };
+ol.control.MousePosition.prototype.setProjection = function(projection) {
+  this.projection_ = ol.proj.get(projection);
+  this.transform_ = null
+};
 ol.control.MousePosition.prototype.updateHTML_ = function(pixel) {
   var html = this.undefinedHTML_;
   if(!goog.isNull(pixel)) {
-    if(this.renderedProjection_ != this.mapProjection_) {
+    if(goog.isNull(this.transform_)) {
       if(!goog.isNull(this.projection_)) {
         this.transform_ = ol.proj.getTransformFromProjections(this.mapProjection_, this.projection_)
       }else {
         this.transform_ = ol.proj.identityTransform
       }
-      this.renderedProjection_ = this.mapProjection_
     }
     var map = this.getMap();
     var coordinate = map.getCoordinateFromPixel(pixel);
