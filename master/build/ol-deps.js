@@ -10,7 +10,7 @@ goog.addDependency('../../../ol/ol/color.js', ['ol.Color'], ['goog.color', 'goog
 goog.addDependency('../../../ol/ol/constraints.js', ['ol.Constraints'], ['ol.ResolutionConstraintType', 'ol.RotationConstraintType']);
 goog.addDependency('../../../ol/ol/control/attributioncontrol.js', ['ol.control.Attribution'], ['goog.array', 'goog.dom', 'goog.dom.TagName', 'goog.object', 'goog.style', 'ol.Attribution', 'ol.FrameState', 'ol.control.Control', 'ol.css']);
 goog.addDependency('../../../ol/ol/control/control.js', ['ol.control.Control'], ['goog.array', 'goog.dom', 'goog.events', 'ol.MapEventType', 'ol.Object']);
-goog.addDependency('../../../ol/ol/control/controldefaults.js', ['ol.control.defaults'], ['goog.array', 'ol.control.Attribution', 'ol.control.Logo', 'ol.control.Zoom']);
+goog.addDependency('../../../ol/ol/control/controldefaults.js', ['ol.control.defaults'], ['ol.Collection', 'ol.control.Attribution', 'ol.control.Logo', 'ol.control.Zoom']);
 goog.addDependency('../../../ol/ol/control/dragboxcontrol.js', ['ol.control.DragBox'], ['goog.asserts', 'goog.dom', 'goog.dom.TagName', 'goog.events', 'goog.math.Size', 'goog.style', 'ol.Coordinate', 'ol.MapBrowserEvent', 'ol.MapBrowserEvent.EventType', 'ol.Pixel', 'ol.control.Control']);
 goog.addDependency('../../../ol/ol/control/fullscreencontrol.js', ['ol.control.FullScreen'], ['goog.asserts', 'goog.dom', 'goog.dom.TagName', 'goog.dom.classes', 'goog.dom.fullscreen', 'goog.dom.fullscreen.EventType', 'goog.events', 'goog.events.EventType', 'ol.control.Control', 'ol.css']);
 goog.addDependency('../../../ol/ol/control/logocontrol.js', ['ol.control.Logo'], ['goog.dom', 'goog.dom.TagName', 'goog.object', 'goog.style', 'ol.FrameState', 'ol.control.Control', 'ol.css']);
