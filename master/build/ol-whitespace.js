@@ -21354,7 +21354,7 @@ ol.control.MousePosition.prototype.setProjection = function(projection) {
 goog.exportProperty(ol.control.MousePosition.prototype, "setProjection", ol.control.MousePosition.prototype.setProjection);
 ol.control.MousePosition.prototype.updateHTML_ = function(pixel) {
   var html = this.undefinedHTML_;
-  if(!goog.isNull(pixel)) {
+  if(!goog.isNull(pixel) && !goog.isNull(this.mapProjection_)) {
     if(goog.isNull(this.transform_)) {
       var projection = this.getProjection();
       if(goog.isDef(projection)) {
