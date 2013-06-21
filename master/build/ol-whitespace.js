@@ -5040,9 +5040,11 @@ goog.require("goog.math");
 goog.require("ol.Object");
 ol.DeviceOrientationProperty = {ALPHA:"alpha", BETA:"beta", GAMMA:"gamma", HEADING:"heading", TRACKING:"tracking"};
 ol.DeviceOrientation = function(opt_options) {
+  goog.base(this);
+  var options = goog.isDef(opt_options) ? opt_options : {};
   this.listenerKey_ = null;
   goog.events.listen(this, ol.Object.getChangeEventType(ol.DeviceOrientationProperty.TRACKING), this.handleTrackingChanged_, false, this);
-  goog.base(this, goog.isDef(opt_options) ? opt_options : {})
+  this.setTracking(goog.isDef(options.tracking) ? options.tracking : false)
 };
 goog.inherits(ol.DeviceOrientation, ol.Object);
 ol.DeviceOrientation.prototype.disposeInternal = function() {
@@ -7431,9 +7433,7 @@ ol.Geolocation = function(opt_options) {
   if(goog.isDef(options.trackingOptions)) {
     this.setTrackingOptions(options.trackingOptions)
   }
-  if(goog.isDef(options.tracking)) {
-    this.setTracking(options.tracking)
-  }
+  this.setTracking(goog.isDef(options.tracking) ? options.tracking : false)
 };
 goog.inherits(ol.Geolocation, ol.Object);
 ol.Geolocation.prototype.disposeInternal = function() {
