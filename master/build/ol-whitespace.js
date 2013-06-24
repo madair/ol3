@@ -644,7 +644,8 @@ goog.addDependency("../src/ol/renderer/canvas/canvaslayerrenderer.js", ["ol.rend
 goog.addDependency("../src/ol/renderer/canvas/canvasmaprenderer.js", ["ol.renderer.canvas.Map"], ["goog.asserts", "goog.dom", "goog.dom.TagName", "goog.style", "goog.vec.Mat4", "ol.Size", "ol.css", "ol.layer.ImageLayer", "ol.layer.TileLayer", "ol.layer.Vector", "ol.renderer.Map", "ol.renderer.canvas.ImageLayer", "ol.renderer.canvas.TileLayer", "ol.renderer.canvas.VectorLayer", "ol.size"]);
 goog.addDependency("../src/ol/renderer/canvas/canvasrenderer.js", ["ol.renderer.canvas.SUPPORTED"], ["ol.canvas"]);
 goog.addDependency("../src/ol/renderer/canvas/canvastilelayerrenderer.js", ["ol.renderer.canvas.TileLayer"], ["goog.array", "goog.asserts", "goog.dom", "goog.dom.TagName", "goog.object", "goog.vec.Mat4", "ol.Size", "ol.Tile", "ol.TileCoord", "ol.TileRange", "ol.TileState", "ol.extent", "ol.layer.TileLayer", "ol.renderer.Map", "ol.renderer.canvas.Layer"]);
-goog.addDependency("../src/ol/renderer/canvas/canvasvectorlayerrenderer.js", ["ol.renderer.canvas.VectorLayer"], ["goog.dom", "goog.dom.TagName", "goog.events", "goog.events.EventType", "goog.object", "goog.vec.Mat4", "ol.Pixel", "ol.TileCache", "ol.TileCoord", "ol.ViewHint", "ol.extent", "ol.filter.Extent", "ol.filter.Geometry", "ol.filter.Logical", "ol.filter.LogicalOperator", "ol.geom.GeometryType", "ol.layer.Vector", "ol.renderer.canvas.Layer", "ol.renderer.canvas.VectorRenderer", "ol.tilegrid.TileGrid"]);
+goog.addDependency("../src/ol/renderer/canvas/canvasvectorlayerrenderer.js", ["ol.renderer.canvas.VectorLayer"], ["goog.dom", "goog.dom.TagName", "goog.events", "goog.events.EventType", "goog.object", "goog.vec.Mat4", "ol.Pixel", "ol.TileCache", "ol.TileCoord", "ol.TileRange", "ol.ViewHint", "ol.extent", "ol.filter.Extent", "ol.filter.Geometry", "ol.filter.Logical", "ol.filter.LogicalOperator", "ol.geom.GeometryType", "ol.layer.Vector", "ol.renderer.canvas.Layer", "ol.renderer.canvas.VectorRenderer", 
+"ol.tilegrid.TileGrid"]);
 goog.addDependency("../src/ol/renderer/canvas/canvasvectorrenderer.js", ["ol.renderer.canvas.VectorRenderer"], ["goog.asserts", "goog.dom", "goog.dom.TagName", "goog.events", "goog.events.EventType", "goog.vec.Mat4", "ol.Feature", "ol.extent", "ol.geom.AbstractCollection", "ol.geom.Geometry", "ol.geom.GeometryType", "ol.geom.LineString", "ol.geom.MultiLineString", "ol.geom.MultiPoint", "ol.geom.MultiPolygon", "ol.geom.Point", "ol.geom.Polygon", "ol.style.IconLiteral", "ol.style.LineLiteral", "ol.style.PointLiteral", 
 "ol.style.PolygonLiteral", "ol.style.ShapeLiteral", "ol.style.ShapeType", "ol.style.SymbolizerLiteral", "ol.style.TextLiteral"]);
 goog.addDependency("../src/ol/renderer/dom/domimagelayerrenderer.js", ["ol.renderer.dom.ImageLayer"], ["goog.dom", "goog.dom.TagName", "goog.events", "goog.events.EventType", "goog.vec.Mat4", "ol.Image", "ol.ImageState", "ol.ViewHint", "ol.dom", "ol.layer.ImageLayer", "ol.renderer.dom.Layer"]);
@@ -13406,7 +13407,9 @@ ol.MapBrowserEventHandler.prototype.handleTouchEnd_ = function(browserEvent) {
     }else {
       this.timestamp_ = 0
     }
-    this.click_(this.down_)
+    if(!goog.isNull(this.down_)) {
+      this.click_(this.down_)
+    }
   }
   this.down_ = null
 };
@@ -17574,6 +17577,7 @@ goog.require("goog.vec.Mat4");
 goog.require("ol.Pixel");
 goog.require("ol.TileCache");
 goog.require("ol.TileCoord");
+goog.require("ol.TileRange");
 goog.require("ol.ViewHint");
 goog.require("ol.extent");
 goog.require("ol.filter.Extent");
@@ -17585,6 +17589,7 @@ goog.require("ol.layer.Vector");
 goog.require("ol.renderer.canvas.Layer");
 goog.require("ol.renderer.canvas.VectorRenderer");
 goog.require("ol.tilegrid.TileGrid");
+ol.renderer.canvas.MIN_RESOLUTION = 0.14929107086948487;
 ol.renderer.canvas.VectorLayer = function(mapRenderer, layer) {
   goog.base(this, mapRenderer, layer);
   this.canvas_ = goog.dom.createElement(goog.dom.TagName.CANVAS);
@@ -17601,6 +17606,7 @@ ol.renderer.canvas.VectorLayer = function(mapRenderer, layer) {
   this.dirty_ = false;
   this.pendingCachePrune_ = false;
   this.tileGrid_ = null;
+  this.tileRange_ = null;
   this.requestMapRenderFrame_ = goog.bind(function() {
     this.dirty_ = true;
     mapRenderer.getMap().requestRenderFrame()
@@ -17632,7 +17638,7 @@ ol.renderer.canvas.VectorLayer.prototype.getFeaturesForPixel = function(pixel, s
   var result = [];
   var layer = this.getLayer();
   var location = map.getCoordinateFromPixel(pixel);
-  var tileCoord = this.tileGrid_.getTileCoordForCoordAndResolution(location, this.getMap().getView().getView2D().getResolution());
+  var tileCoord = this.tileGrid_.getTileCoordForCoordAndZ(location, 0);
   var key = tileCoord.toString();
   if(this.tileCache_.containsKey(key)) {
     var cachedTile = this.tileCache_.get(key);
@@ -17689,12 +17695,23 @@ ol.renderer.canvas.VectorLayer.prototype.handleLayerChange_ = function(event) {
   this.requestMapRenderFrame_()
 };
 ol.renderer.canvas.VectorLayer.prototype.renderFrame = function(frameState, layerState) {
-  var view2DState = frameState.view2DState, resolution = view2DState.resolution, extent = frameState.extent, layer = this.getVectorLayer(), tileGrid = this.tileGrid_;
-  if(goog.isNull(tileGrid)) {
-    tileGrid = ol.tilegrid.createForProjection(view2DState.projection, 20, [512, 512]);
-    this.tileGrid_ = tileGrid
+  var view2DState = frameState.view2DState, resolution = view2DState.resolution, projection = view2DState.projection, extent = frameState.extent, layer = this.getVectorLayer(), tileGrid = this.tileGrid_, tileSize = [512, 512], idle = !frameState.viewHints[ol.ViewHint.ANIMATING] && !frameState.viewHints[ol.ViewHint.INTERACTING];
+  if(idle) {
+    var gridResolution = Math.max(resolution, ol.renderer.canvas.MIN_RESOLUTION / ol.METERS_PER_UNIT[projection.getUnits()]);
+    if(gridResolution !== this.renderedResolution_) {
+      tileGrid = new ol.tilegrid.TileGrid({origin:[0, 0], projection:projection, resolutions:[gridResolution], tileSize:tileSize});
+      this.tileCache_.clear();
+      this.tileGrid_ = tileGrid
+    }
   }
-  var z = tileGrid.getZForResolution(resolution), tileResolution = tileGrid.getResolution(z), tileRange = tileGrid.getTileRangeForExtentAndResolution(extent, tileResolution), tileRangeExtent = tileGrid.getTileRangeExtent(z, tileRange), tileSize = tileGrid.getTileSize(z), sketchOrigin = ol.extent.getTopLeft(tileRangeExtent), transform = this.transform_;
+  if(goog.isNull(tileGrid)) {
+    return
+  }
+  var tileResolution = tileGrid.getResolution(0);
+  if(idle) {
+    this.tileRange_ = tileGrid.getTileRangeForExtentAndResolution(extent, tileResolution)
+  }
+  var transform = this.transform_, tileRange = this.tileRange_, tileRangeExtent = tileGrid.getTileRangeExtent(0, tileRange), sketchOrigin = ol.extent.getTopLeft(tileRangeExtent);
   goog.vec.Mat4.makeIdentity(transform);
   goog.vec.Mat4.translate(transform, frameState.size[0] / 2, frameState.size[1] / 2, 0);
   goog.vec.Mat4.scale(transform, tileResolution / resolution, tileResolution / resolution, 1);
@@ -17729,31 +17746,36 @@ ol.renderer.canvas.VectorLayer.prototype.renderFrame = function(frameState, laye
   var tilesToRender = {};
   var tilesOnSketchCanvas = {};
   var tileGutter = 15 * tileResolution;
-  var tile, tileCoord, key, tileState, x, y;
-  var filters = this.geometryFilters_, numFilters = filters.length, deferred = false, dirty = false, i, geomFilter, tileExtent, extentFilter, type, groups, group, j, numGroups;
+  var tile, tileCoord, key, x, y;
+  var filters = this.geometryFilters_, numFilters = filters.length, deferred = false, dirty = false, i, geomFilter, tileExtent, extentFilter, type, groups, group, j, numGroups, featuresObject, tileHasFeatures;
   for(x = tileRange.minX;x <= tileRange.maxX;++x) {
     for(y = tileRange.minY;y <= tileRange.maxY;++y) {
-      tileCoord = new ol.TileCoord(z, x, y);
+      tileCoord = new ol.TileCoord(0, x, y);
       key = tileCoord.toString();
       if(this.tileCache_.containsKey(key)) {
         tilesToRender[key] = tileCoord
       }else {
-        if(!frameState.viewHints[ol.ViewHint.ANIMATING]) {
+        if(idle) {
           tileExtent = tileGrid.getTileCoordExtent(tileCoord);
           tileExtent[0] -= tileGutter;
           tileExtent[1] += tileGutter;
           tileExtent[2] -= tileGutter;
           tileExtent[3] += tileGutter;
           extentFilter = new ol.filter.Extent(tileExtent);
+          tileHasFeatures = false;
           for(i = 0;i < numFilters;++i) {
             geomFilter = filters[i];
             type = geomFilter.getType();
             if(!goog.isDef(featuresToRender[type])) {
               featuresToRender[type] = {}
             }
-            goog.object.extend(featuresToRender[type], layer.getFeaturesObject(new ol.filter.Logical([geomFilter, extentFilter], ol.filter.LogicalOperator.AND)))
+            featuresObject = layer.getFeaturesObject(new ol.filter.Logical([geomFilter, extentFilter], ol.filter.LogicalOperator.AND));
+            tileHasFeatures = tileHasFeatures || !goog.object.isEmpty(featuresObject);
+            goog.object.extend(featuresToRender[type], featuresObject)
           }
-          tilesOnSketchCanvas[key] = tileCoord
+          if(tileHasFeatures) {
+            tilesOnSketchCanvas[key] = tileCoord
+          }
         }else {
           dirty = true
         }
